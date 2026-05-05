@@ -1,0 +1,19 @@
+# =============================================================================
+# Grafana Datasource Provisioning — Prometheus
+# =============================================================================
+# This file auto-configures Grafana to connect to Prometheus on startup.
+# Person 3 can add additional datasources (Loki, CloudWatch, etc.) here.
+# =============================================================================
+
+apiVersion: 1
+
+datasources:
+  - name: Prometheus
+    type: prometheus
+    access: proxy
+    url: http://prometheus:9090
+    isDefault: true
+    editable: true
+    jsonData:
+      timeInterval: '15s'
+      httpMethod: POST

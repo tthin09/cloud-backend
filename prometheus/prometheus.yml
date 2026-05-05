@@ -1,0 +1,93 @@
+# =============================================================================
+# prometheus.yml — Prometheus scrape configuration
+# =============================================================================
+# This file defines all scrape targets for the monitoring stack.
+# Person 1 (Infra) will provide the actual IPs/hostnames to replace
+# the placeholder values below.
+#
+# Targets:
+#   1. Node.js App          → :8081/metrics  (prom-client)
+#   2. Node Exporter         → :9100/metrics  (system metrics)
+#   3. cAdvisor              → :8080/metrics  (container metrics)
+#   4. CloudWatch Exporter   → :9106/metrics  (AWS metrics - optional)
+#   5. Prometheus self       → :9090/metrics
+# =============================================================================
+
+global:
+  scrape_interval: 15s        # How often to scrape targets
+  evaluation_interval: 15s    # How often to evaluate alerting rules
+  scrape_timeout: 10s         # Timeout per scrape
+
+  external_labels:
+    environment: 'aws-production'
+    project: 'monitoring-demo'
+
+# ---------------------------------------------------------------------------
+# Alerting — connect to Alertmanager (if Person 3 uses standalone Alertmanager)
+# ---------------------------------------------------------------------------
+# alerting:
+#   alertmanagers:
+#     - static_configs:
+#         - targets:
+#             - alertmanager:9093
+
+# ---------------------------------------------------------------------------
+# Rule files — Prometheus-side alert rules (optional; Person 3 may use
+# Grafana-managed alerts instead)
+# ---------------------------------------------------------------------------
+rule_files:
+  - "alert-rules.yml"
+
+# =============================================================================
+# Scrape configurations
+# =============================================================================
+scrape_configs:
+
+  # ---- 1. Prometheus self-monitoring ----
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+        labels:
+          instance: 'monitoring-server'
+
+  # ---- 2. Node.js Demo Application ----
+  - job_name: 'nodejs-app'
+    metrics_path: /metrics
+    scrape_interval: 10s          # App metrics change fast → scrape more often
+    static_configs:
+      - targets: ['app:8081']     # Docker service name, or replace with EC2 private IP
+        labels:
+          app: 'monitoring-demo'
+          tier: 'application'
+
+  # ---- 3. Node Exporter (system metrics: CPU, RAM, Disk, Network) ----
+  - job_name: 'node-exporter'
+    static_configs:
+      - targets: ['node-exporter:9100']   # Docker service name or EC2 IP
+        labels:
+          instance: 'app-server'
+          tier: 'infrastructure'
+
+  # ---- 4. cAdvisor (container metrics) ----
+  - job_name: 'cadvisor'
+    static_configs:
+      - targets: ['cadvisor:8080']        # Docker service name or EC2 IP
+        labels:
+          tier: 'container'
+
+  # ---- 5. CloudWatch Exporter (AWS-native metrics) — OPTIONAL ----
+  # Uncomment after Person 1 sets up the CloudWatch Exporter / YACE
+  # - job_name: 'cloudwatch'
+  #   scrape_interval: 60s                # CloudWatch has lower resolution
+  #   scrape_timeout: 55s
+  #   static_configs:
+  #     - targets: ['cloudwatch-exporter:9106']
+  #       labels:
+  #         tier: 'aws'
+
+  # ---- 6. MySQL Exporter (optional — if deployed) ----
+  # - job_name: 'mysql-exporter'
+  #   static_configs:
+  #     - targets: ['mysql-exporter:9104']
+  #       labels:
+  #         tier: 'database'
