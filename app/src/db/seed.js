@@ -72,6 +72,7 @@ async function seed() {
 
   console.log(`✅ Seeded ${USERS.length} users, ${PRODUCTS.length} products, 15 orders.`);
   await pool.end();
+  process.exit(0);
 }
 
 seed().catch((err) => {

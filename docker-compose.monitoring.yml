@@ -1,0 +1,62 @@
+# =============================================================================
+# docker-compose.monitoring.yml -- Monitoring EC2 stack
+# =============================================================================
+# Run this file on the Monitoring server EC2 instance.
+#
+# Monitoring server private IP: 172.31.14.155
+# Prometheus scrapes the App server private IP: 172.31.24.13
+#
+# Services:
+#   1. prometheus -- metrics collection and alert rules (:9090)
+#   2. grafana    -- dashboards and alerting (:4000 -> container :3000)
+# =============================================================================
+
+services:
+  prometheus:
+    image: prom/prometheus:v2.51.0
+    container_name: monitoring-prometheus
+    restart: unless-stopped
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--storage.tsdb.retention.time=15d'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--web.enable-lifecycle'
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./prometheus/alert-rules.yml:/etc/prometheus/alert-rules.yml:ro
+      - prometheus_data:/prometheus
+    ports:
+      - "9090:9090"
+    networks:
+      - monitoring-net
+
+  grafana:
+    image: grafana/grafana:10.4.1
+    container_name: monitoring-grafana
+    restart: unless-stopped
+    environment:
+      GF_SECURITY_ADMIN_USER: ${GF_ADMIN_USER:-admin}
+      GF_SECURITY_ADMIN_PASSWORD: ${GF_ADMIN_PASSWORD:-admin}
+      GF_USERS_ALLOW_SIGN_UP: 'false'
+      GF_UNIFIED_ALERTING_ENABLED: 'true'
+      GF_ALERTING_ENABLED: 'false'
+      GF_SERVER_ROOT_URL: ${GF_SERVER_ROOT_URL:-http://localhost:4000}
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning:ro
+    ports:
+      - "4000:3000"
+    depends_on:
+      - prometheus
+    networks:
+      - monitoring-net
+
+volumes:
+  prometheus_data:
+  grafana_data:
+
+networks:
+  monitoring-net:
+    driver: bridge

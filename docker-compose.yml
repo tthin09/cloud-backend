@@ -24,7 +24,7 @@ services:
       MYSQL_USER: ${DB_USER:-app_user}
       MYSQL_PASSWORD: ${DB_PASSWORD:-your_secure_password}
     ports:
-      - "3306:3306"
+      - "3307:3306" 
     volumes:
       - mysql_data:/var/lib/mysql
     healthcheck:
@@ -89,6 +89,11 @@ services:
       GF_SECURITY_ADMIN_USER: ${GF_ADMIN_USER:-admin}
       GF_SECURITY_ADMIN_PASSWORD: ${GF_ADMIN_PASSWORD:-admin}
       GF_USERS_ALLOW_SIGN_UP: 'false'
+      # Unified alerting (Grafana 10.x) — enable provisioned alerts
+      GF_UNIFIED_ALERTING_ENABLED: 'true'
+      GF_ALERTING_ENABLED: 'false'
+      # Server root URL for alert notification links
+      GF_SERVER_ROOT_URL: 'http://localhost:4000'
     volumes:
       - grafana_data:/var/lib/grafana
       - ./grafana/provisioning:/etc/grafana/provisioning:ro

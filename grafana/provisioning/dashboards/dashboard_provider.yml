@@ -1,0 +1,21 @@
+# =============================================================================
+# Dashboard Provider — Auto-load JSON dashboards from this directory
+# =============================================================================
+# Grafana will scan this folder on startup and import all .json files
+# as dashboards. Changes to the JSON files will be reflected on reload.
+# =============================================================================
+
+apiVersion: 1
+
+providers:
+  - name: 'default'
+    orgId: 1
+    folder: 'AWS Monitoring'
+    folderUid: 'aws-monitoring'
+    type: file
+    disableDeletion: false
+    updateIntervalSeconds: 30
+    allowUiUpdates: true
+    options:
+      path: /etc/grafana/provisioning/dashboards
+      foldersFromFilesStructure: false

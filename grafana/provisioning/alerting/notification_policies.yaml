@@ -1,0 +1,43 @@
+# =============================================================================
+# Grafana Alerting — Notification Policies
+# =============================================================================
+# Routes alerts to the correct contact point based on severity labels.
+#
+# Routing logic:
+#   severity=critical → telegram-alerts (group 5m, repeat 4h)
+#   severity=warning  → telegram-alerts (group 10m, repeat 12h)
+#   default           → telegram-alerts (group 5m, repeat 4h)
+#
+# Alerts are grouped by [alertname, severity] to avoid notification spam.
+# =============================================================================
+
+apiVersion: 1
+
+policies:
+  - orgId: 1
+    receiver: telegram-alerts
+    group_by:
+      - grafana_folder
+      - alertname
+      - severity
+    group_wait: 30s
+    group_interval: 5m
+    repeat_interval: 4h
+    routes:
+      # ── Critical alerts: notify quickly ──
+      - receiver: telegram-alerts
+        object_matchers:
+          - ["severity", "=", "critical"]
+        group_wait: 10s
+        group_interval: 5m
+        repeat_interval: 4h
+        continue: false
+
+      # ── Warning alerts: less urgent, group more ──
+      - receiver: telegram-alerts
+        object_matchers:
+          - ["severity", "=", "warning"]
+        group_wait: 30s
+        group_interval: 10m
+        repeat_interval: 12h
+        continue: false

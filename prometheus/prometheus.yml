@@ -1,9 +1,10 @@
 # =============================================================================
 # prometheus.yml — Prometheus scrape configuration
 # =============================================================================
-# This file defines all scrape targets for the monitoring stack.
-# Person 1 (Infra) will provide the actual IPs/hostnames to replace
-# the placeholder values below.
+# This file defines all scrape targets for the monitoring stack on AWS.
+#
+# App server private IP: 172.31.24.13
+# Monitoring server private IP: 172.31.14.155
 #
 # Targets:
 #   1. Node.js App          → :8081/metrics  (prom-client)
@@ -55,15 +56,16 @@ scrape_configs:
     metrics_path: /metrics
     scrape_interval: 10s          # App metrics change fast → scrape more often
     static_configs:
-      - targets: ['app:8081']     # Docker service name, or replace with EC2 private IP
+      - targets: ['172.31.24.13:8081']
         labels:
           app: 'monitoring-demo'
+          instance: 'app-server'
           tier: 'application'
 
   # ---- 3. Node Exporter (system metrics: CPU, RAM, Disk, Network) ----
   - job_name: 'node-exporter'
     static_configs:
-      - targets: ['node-exporter:9100']   # Docker service name or EC2 IP
+      - targets: ['172.31.24.13:9100']
         labels:
           instance: 'app-server'
           tier: 'infrastructure'
@@ -71,8 +73,9 @@ scrape_configs:
   # ---- 4. cAdvisor (container metrics) ----
   - job_name: 'cadvisor'
     static_configs:
-      - targets: ['cadvisor:8080']        # Docker service name or EC2 IP
+      - targets: ['172.31.24.13:8080']
         labels:
+          instance: 'app-server'
           tier: 'container'
 
   # ---- 5. CloudWatch Exporter (AWS-native metrics) — OPTIONAL ----

@@ -1,0 +1,48 @@
+# =============================================================================
+# Grafana Alerting — Contact Points
+# =============================================================================
+# Defines where alert notifications are sent.
+# Currently configured: Telegram Bot
+#
+# ⚠️  SETUP REQUIRED: Replace the placeholder values below with your own
+#     Telegram Bot Token and Chat ID. See README-grafana.md for instructions.
+# =============================================================================
+
+apiVersion: 1
+
+contactPoints:
+  - orgId: 1
+    name: telegram-alerts
+    receivers:
+      - uid: telegram-contact
+        type: telegram
+        settings:
+          # ┌────────────────────────────────────────────────────────────────┐
+          # │  🔑 REPLACE THESE VALUES WITH YOUR TELEGRAM BOT CREDENTIALS  │
+          # │                                                                │
+          # │  1. Talk to @BotFather on Telegram → /newbot                  │
+          # │  2. Copy the bot token below                                   │
+          # │  3. Create a group, add the bot, get the chat ID              │
+          # │  See README-grafana.md for detailed instructions               │
+          # └────────────────────────────────────────────────────────────────┘
+          bottoken: "8616857443:AAHeaLKOAo6LZhnclE_W4ey0PdlP2AVHASM"
+          chatid: "-5276092592"
+          # Parse mode: use HTML for rich formatting
+          parse_mode: "HTML"
+          # Disable link preview for cleaner messages
+          disable_web_page_preview: true
+          # Use the custom message template
+          message: |
+            {{ if eq .Status "firing" }}🔴{{ else }}🟢{{ end }} <b>{{ .Status | toUpper }}</b>
+
+            {{ range .Alerts }}
+            <b>{{ .Labels.alertname }}</b>
+            Severity: <code>{{ .Labels.severity }}</code>
+            {{ if .Annotations.summary }}📋 {{ .Annotations.summary }}{{ end }}
+            {{ if .Annotations.description }}📝 {{ .Annotations.description }}{{ end }}
+            {{ if .Values }}📊 Value: <code>{{ .Values }}</code>{{ end }}
+            ⏰ {{ .StartsAt.Format "2006-01-02 15:04:05 MST" }}
+            {{ end }}
+
+            🔗 <a href="{{ .ExternalURL }}">Open Grafana</a>
+        disableResolveMessage: false

@@ -1,4 +1,11 @@
-# Grafana provisioning placeholder — Person 3 will populate these directories
-# For now, create the minimum datasource config so Grafana connects to Prometheus
+# Grafana Provisioning
 
-# See grafana/provisioning/datasources/datasource.yml
+This directory contains all Grafana auto-provisioning files:
+
+- **`datasources/`** — Prometheus datasource connection
+- **`dashboards/`** — 4 dashboard JSONs + provider config
+- **`alerting/`** — Alert rules, contact points, notification policies
+
+All files are loaded automatically when Grafana starts (mounted as `:ro` volume).
+
+See [README-grafana.md](../README-grafana.md) for full documentation.
